@@ -204,6 +204,11 @@ class BusinessInfoGUI:
                 response = requests.get(result)
                 if response.status_code == 200:
                     soup = BeautifulSoup(response.text, 'html.parser')
+
+                    # Remove script and style tags
+                    for script in soup(["script", "style"]):
+                        script.decompose()
+
                     for info_type in required_info:
                         if info_type == "address" and not business_info.get("address"):
                             address = soup.find(string=re.compile(r'\bAddress\b', re.I))
@@ -257,6 +262,8 @@ class BusinessInfoGUI:
                             zip_code = soup.find(string=re.compile(r'\bZip Code\b', re.I))
                             if zip_code:
                                 business_info["zip code"] = zip_code.find_next().get_text(strip=True)
+                    
+                    # Break loop if all required info is gathered
                     if len(business_info) == len(required_info):
                         break
         except Exception as e:
@@ -307,4 +314,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = BusinessInfoGUI(root)
     root.mainloop()
-
